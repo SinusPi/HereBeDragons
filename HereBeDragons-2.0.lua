@@ -1,6 +1,6 @@
 -- HereBeDragons is a data API for the World of Warcraft mapping system
 
-local MAJOR, MINOR = "HereBeDragons-2.0", 22
+local MAJOR, MINOR = "HereBeDragons-ZGV", 22
 assert(LibStub, MAJOR .. " requires LibStub")
 
 local HereBeDragons, oldversion = LibStub:NewLibrary(MAJOR, MINOR)
@@ -61,6 +61,7 @@ local instanceIDOverrides = {
     -- Legion
     [1478] = 1220, -- Temple of Elune Scenario (Val'Sharah)
     [1495] = 1220, -- Protection Paladin Artifact Scenario (Stormheim)
+    [1498] = 1220, -- Havoc Demon Hunter Artifact Scenario (Suramar)
     [1502] = 1220, -- Dalaran Underbelly
     [1533] = 0,    -- Karazhan Artifact Scenario
     [1539] = 0,    -- Arm Warrior Artifact Tirisfal Scenario
@@ -68,10 +69,13 @@ local instanceIDOverrides = {
     [1626] = 1220, -- Suramar Withered Scenario
     [1662] = 1220, -- Suramar Invasion Scenario
     -- BfA
+    [1917] = 1116, -- Gorgrond - Mag'har scenario
     [2213] = 0,    -- Horrific Vision of Stormwind
     [2241] = 1,    -- Uldum N'zoth assault
     [2274] = 1,    -- Uldum N'zoth Minor Vision
     [2275] = 870,  -- Vale of Eternal Blossoms N'zoth Minor Vision
+    -- DF
+    [2504] = 2444, -- The War Creche, Dracthyr starter
 }
 
 local dynamicInstanceIDOverrides = {}
@@ -262,6 +266,10 @@ if not oldversion or oldversion < 21 then
     end
 
     gatherMapData()
+
+	-- Zygor:
+    HereBeDragons.processMap = processMap
+    HereBeDragons.processMapChildrenRecursive = processMapChildrenRecursive
 end
 
 -- Transform a set of coordinates based on the defined map transformations

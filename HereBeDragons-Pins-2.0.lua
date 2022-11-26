@@ -1,12 +1,12 @@
 -- HereBeDragons-Pins is a library to show pins/icons on the world map and minimap
 
-local MAJOR, MINOR = "HereBeDragons-Pins-2.0", 11
+local MAJOR, MINOR = "HereBeDragons-Pins-ZGV", 11
 assert(LibStub, MAJOR .. " requires LibStub")
 
 local pins, _oldversion = LibStub:NewLibrary(MAJOR, MINOR)
 if not pins then return end
 
-local HBD = LibStub("HereBeDragons-2.0")
+local HBD = LibStub("HereBeDragons-ZGV")
 
 local MinimapRadiusAPI = C_Minimap and C_Minimap.GetViewRadius
 
@@ -140,11 +140,14 @@ local function drawMinimapPin(pin, data)
 
     -- calculate distance from the center of the map
     local dist
-    if isRound then
+    if isRound or data.allowOffEdge then
         dist = (diffX*diffX + diffY*diffY) / 0.9^2
     else
         dist = max(diffX*diffX, diffY*diffY) / 0.9^2
     end
+
+    pin.minimap_x = diffX
+    pin.minimap_y = diffY
 
     -- if distance > 1, then adapt node position to slide on the border
     if dist > 1 and data.floatOnEdge then
@@ -153,11 +156,12 @@ local function drawMinimapPin(pin, data)
         diffY = diffY/dist
     end
 
-    if dist <= 1 or data.floatOnEdge then
+    if dist <= 1 or data.floatOnEdge or data.allowOffEdge then
         pin:Show()
         pin:ClearAllPoints()
         pin:SetPoint("CENTER", pins.Minimap, "CENTER", diffX * minimapWidth, -diffY * minimapHeight)
-        data.onEdge = (dist > 1)
+        data.onEdge = data.floatOnEdge and (dist > 1)
+        data.offEdge = data.allowOffEdge and (dist > 1)
     else
         pin:Hide()
         data.onEdge = nil
@@ -347,15 +351,15 @@ worldmapPinsPool.resetterFunc = function(pinPool, pin)
 end
 
 -- register pin pool with the world map
-WorldMapFrame.pinPools["HereBeDragonsPinsTemplate"] = worldmapPinsPool
+WorldMapFrame.pinPools["HereBeDragonsPinsTemplateZGV"] = worldmapPinsPool
 
 -- provider base API
 function worldmapProvider:RemoveAllData()
-    self:GetMap():RemoveAllPinsByTemplate("HereBeDragonsPinsTemplate")
+    self:GetMap():RemoveAllPinsByTemplate("HereBeDragonsPinsTemplateZGV")
 end
 
 function worldmapProvider:RemovePinByIcon(icon)
-    for pin in self:GetMap():EnumeratePinsByTemplate("HereBeDragonsPinsTemplate") do
+    for pin in self:GetMap():EnumeratePinsByTemplate("HereBeDragonsPinsTemplateZGV") do
         if pin.icon == icon then
             self:GetMap():RemovePin(pin)
         end
@@ -363,7 +367,7 @@ function worldmapProvider:RemovePinByIcon(icon)
 end
 
 function worldmapProvider:RemovePinsByRef(ref)
-    for pin in self:GetMap():EnumeratePinsByTemplate("HereBeDragonsPinsTemplate") do
+    for pin in self:GetMap():EnumeratePinsByTemplate("HereBeDragonsPinsTemplateZGV") do
         if pin.icon and worldmapPinRegistry[ref][pin.icon] then
             self:GetMap():RemovePin(pin)
         end
@@ -434,7 +438,7 @@ function worldmapProvider:HandlePin(icon, data)
         x, y = HBD:GetZoneCoordinatesFromWorld(data.x, data.y, uiMapID)
     end
     if x and y then
-        self:GetMap():AcquirePin("HereBeDragonsPinsTemplate", icon, x, y, data.frameLevelType)
+        self:GetMap():AcquirePin("HereBeDragonsPinsTemplateZGV", icon, x, y, data.frameLevelType)
     end
 end
 
@@ -526,7 +530,7 @@ HBD.RegisterCallback(pins, "PlayerZoneChanged", UpdateMinimap)
 -- @param x X position in world coordinates
 -- @param y Y position in world coordinates
 -- @param floatOnEdge flag if the icon should float on the edge of the minimap when going out of range, or hide immediately (default false)
-function pins:AddMinimapIconWorld(ref, icon, instanceID, x, y, floatOnEdge)
+function pins:AddMinimapIconWorld(ref, icon, instanceID, x, y, floatOnEdge, allowOffEdge)
     if not ref then
         error(MAJOR..": AddMinimapIconWorld: 'ref' must not be nil", 2)
     end
@@ -548,6 +552,7 @@ function pins:AddMinimapIconWorld(ref, icon, instanceID, x, y, floatOnEdge)
     t.x = x
     t.y = y
     t.floatOnEdge = floatOnEdge
+    t.allowOffEdge = allowOffEdge
     t.uiMapID = nil
     t.showInParentZone = nil
 
