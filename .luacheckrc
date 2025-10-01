@@ -37,9 +37,10 @@ read_globals = {
 
     -- FrameXML functions
     "CreateFramePool",
+    "CreateUnsecuredRegionPoolInstance",
     "CreateFromMixins",
     "CreateVector2D",
-    "FramePool_HideAndClearAnchors",
+    "Lerp",
     "Mixin",
 
     -- FrameXML Frames
@@ -56,4 +57,7 @@ read_globals = {
     "WOW_PROJECT_MAINLINE",
     "WOW_PROJECT_CLASSIC",
     "WOW_PROJECT_BURNING_CRUSADE_CLASSIC",
+    "WOW_PROJECT_WRATH_CLASSIC",
+    "WOW_PROJECT_CATACLYSM_CLASSIC",
+    "WOW_PROJECT_MISTS_CLASSIC"
 }
